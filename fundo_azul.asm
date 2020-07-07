@@ -1,7 +1,17 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Example fundo azul
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+    
     processor 6502
 
+;;;;
+; INICIO INICIALIZACOES PADRÃO 
+;;;;
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Include required files with VCS register memory mapping and macros
+;; Inclusao as bibliotecas 
+;; vcs.h para mapeamento de memoria 
+;; macros.h  são macros prontas ex. CLEAN_START
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     include "vcs.h"
     include "macro.h"
@@ -12,10 +22,6 @@
     seg.u Variables
     org $80
 
-PlayerXPos         byte      ; player0 x-position
-PlayerYPos         byte         ; player0 y-position
-Player1XPos      byte         ; player1 x-position
-Player1YPos      byte         ; player1 y-position
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Start our ROM code at memory address $F000
@@ -26,21 +32,19 @@ Player1YPos      byte         ; player1 y-position
 Reset:
     CLEAN_START              ; call macro to reset memory and registers
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Initialize RAM variables and TIA registers
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-    lda #10
-    sta PlayerYPos              ; PlayerYPos = 10
-    lda #60
-    sta PlayerXPos              ; PlayerXPos = 60
+;;;;
+; FIM INICIALIZACOES PADRÃO 
+;;;;
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Start the main display loop and frame rendering
+;; INICIO preenchimento tela principal e loop renderizaçao frame 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 StartFrame:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Display VSYNC and VBLANK
+;; necessario para todos programas 
+;; preencher da área não visível padrao NTSC
+;;vertical sync VSYNC e vertical blank VBLANK
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     lda #2
     sta VBLANK               ; turn on VBLANK
@@ -56,18 +60,21 @@ StartFrame:
     sta VBLANK               ; turn off VBLANK
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Display the 192 visible scanlines of our main game
+;; Aqui iniciar a 192 área visiveis do game 
+;; defino a cor de fundo na registrador COLUBK
+;; faço um loop 192 interaçoes para preencher a cor do fundo da tela
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 GameVisibleLine:
     lda #$84
     sta COLUBK               ; ajusta blackground para azul
     
 
-    ldx #192                 ; X counts the number of remaining scanlines
+    ldx #192                 ; X conta o numeto de scanline remanescentes
 .GameLineLoop:               ; esse loop preenche as 192 linhas com azul
 ;ponto significa que o loop so roda local (escopo)
-    sta WSYNC
-    dex                      ; X--
+    sta WSYNC                ; WSYNC = preenche cada linha da tela, por interaçao
+    dex                      ; X--  decrementa
     bne .GameLineLoop        ; repeat next main game scanline until finished
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
